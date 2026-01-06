@@ -9,3 +9,4 @@ python-dotenv==1.2.1
 python-frontmatter==1.1.0
 PyYAML==6.0.3
 Werkzeug==3.1.4
+gunicorn==23.0.0
