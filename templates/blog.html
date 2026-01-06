@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2 mb-3">
+    <h1 class="mb-0">Blog</h1>
+    <a class="text-decoration-none" href="{{ url_for('scrapbook') }}">Scrapbook →</a>
+  </div>
+
+  {% if not posts %}
+    <p class="text-muted">No posts yet.</p>
+  {% else %}
+    <div class="vstack gap-3">
+      {% for p in posts %}
+        <a class="text-decoration-none" href="{{ url_for('blog_post', slug=p.slug) }}">
+          <article class="p-4 border rounded-4 bg-white card-like">
+            <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
+              <h2 class="h5 mb-0 text-dark">{{ p.title }}</h2>
+              {% if p.date %}
+                <span class="text-muted small">{{ p.date }}</span>
+              {% endif %}
+            </div>
+
+            {% if p.excerpt %}
+              <p class="mt-2 mb-0 text-muted">{{ p.excerpt }}</p>
+            {% endif %}
+          </article>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

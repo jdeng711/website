@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <header class="mb-4">
+    <h1 class="mb-2">Jason Around the Globe</h1>
+    <p class="text-muted mb-0">
+      Documenting My Travels & "Adventures"
+    </p>
+  </header>
+
+  <div class="container-fluid px-lg-5">
+    <div class="row g-4 mb-4" id="travelGlobeRow">
+      <div class="col-12 col-lg-9">
+        <div class="globe-wrap">
+          <div id="globe"></div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-3">
+        <div class="border rounded-4 bg-white p-4 h-100 details-panel">
+          <h2 class="h5 mb-2">Details</h2>
+          <p class="text-muted mb-0" id="pinHint">Click a pin to see details here.</p>
+
+          <div id="pinDetails" class="d-none">
+            <div class="mt-3">
+              <div class="fw-semibold" id="dPlace"></div>
+              <div class="text-muted small" id="dDates"></div>
+              <div class="mt-2 d-flex flex-wrap gap-2" id="dBadges"></div>
+            </div>
+            <div class="mt-3 post-md" id="dNotes"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if not stops %}
+    <p class="text-muted">No travel entries yet.</p>
+  {% else %}
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="text-muted small">Filter</div>
+      <select class="form-select form-select-sm w-auto" id="yearFilter">
+        <option value="__all__" selected>All years</option>
+      </select>
+    </div>
+
+    <div class="accordion" id="travelAccordion">
+      {% for s in stops %}
+        {% set sid = s.id %}
+        <div class="accordion-item border rounded-4 overflow-hidden mb-3 card-like"
+          data-stop-id="{{ s.id }}"
+          data-year="{{ (s.start_date or '')[:4] }}">
+          <h2 class="accordion-header" id="{{ sid }}-heading">
+            <button
+              class="accordion-button collapsed"
+                data-lat="{{ s.lat }}" data-lng="{{ s.lng }}"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#{{ sid }}-collapse"
+              aria-expanded="false"
+              aria-controls="{{ sid }}-collapse"
+              data-id="{{ s.id }}"
+              data-place="{{ s.place }}"
+              data-country="{{ s.country }}"
+              data-start="{{ s.start_date }}"
+              data-end="{{ s.end_date }}"
+              data-days="{{ s.days }}"
+              data-type="{{ s.type }}"
+              data-notes="{{ s.notes_md | e }}"
+
+            >
+              <div class="w-100 d-flex align-items-baseline justify-content-between flex-wrap gap-2 pe-3">
+                <span class="fw-semibold">
+                  {{ s.place }}{% if s.country %}, {{ s.country }}{% endif %}
+                </span>
+                <span class="text-muted small">
+                  {{ s.start_date }} → {{ s.end_date }}
+                  {% if s.days %} · {{ s.days }} day{% if s.days != 1 %}s{% endif %}{% endif %}
+                </span>
+              </div>
+            </button>
+          </h2>
+
+          <div
+            id="{{ sid }}-collapse"
+            class="accordion-collapse collapse"
+            aria-labelledby="{{ sid }}-heading"
+            data-bs-parent="#travelAccordion"
+          >
+            <div class="accordion-body bg-white">
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge text-bg-light border">{{ s.type }}</span>
+                {% if s.lat is not none and s.lng is not none %}
+                  <span class="badge text-bg-light border">Lat {{ s.lat }}, Lng {{ s.lng }}</span>
+                {% endif %}
+              </div>
+
+              {% if s.notes_md %}
+                <div class="post-md">
+                  {{ s.notes_md | markdown }}
+                </div>
+              {% else %}
+                <p class="text-muted mb-0">No notes.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <script id="travelStopsData" type="application/json">
+    {{ stops | tojson }}
+  </script>
+
+  <script src="https://unpkg.com/three/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <script>
+    const globeEl = document.getElementById("globe");
+    const stops = JSON.parse(document.getElementById("travelStopsData").textContent);
+
+    // 1) Create the globe FIRST
+    const globe = Globe()(globeEl)
+      .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
+      .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
+      .backgroundColor("rgba(0,0,0,0)");
+
+    // 2) Size the globe canvas properly
+    function sizeMainGlobe() {
+      const { width, height } = globeEl.getBoundingClientRect();
+      globe.width(Math.floor(width)).height(Math.floor(height));
+    }
+    sizeMainGlobe();
+    setTimeout(sizeMainGlobe, 0);
+    setTimeout(sizeMainGlobe, 200);
+    window.addEventListener("resize", sizeMainGlobe);
+
+    // 3) View + controls (ONLY DEFINE ONCE)
+    const DEFAULT_VIEW = {
+      lat: 35,
+      lng: -30,
+      altitude: 1.6
+    };
+
+    globe.pointOfView(DEFAULT_VIEW);
+    const controls = globe.controls();
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.enableDamping = false;
+
+    // 4) IMPORTANT: ensure NO old 3D points render
+    globe.pointsData([]);
+
+    document.querySelectorAll("#travelAccordion .accordion-button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const d = {
+          id: btn.dataset.id,
+          lat: btn.dataset.lat ? parseFloat(btn.dataset.lat) : null,
+          lng: btn.dataset.lng ? parseFloat(btn.dataset.lng) : null,
+          place: btn.dataset.place || "",
+          country: btn.dataset.country || "",
+          start_date: btn.dataset.start || "",
+          end_date: btn.dataset.end || "",
+          days: btn.dataset.days ? parseInt(btn.dataset.days, 10) : null,
+          type: btn.dataset.type || "",
+          notes_md: btn.dataset.notes || ""
+        };
+
+        showDetails(d);
+
+        if (!Number.isNaN(d.lat) && !Number.isNaN(d.lng) && d.lat != null && d.lng != null) {
+          globe.pointOfView({ lat: d.lat, lng: d.lng, altitude: 1.7 }, 700);
+        }
+      });
+    });
+
+
+    // 5) Add HTML pins
+    const pinStops = stops.filter(s => s.lat != null && s.lng != null);
+
+    function showDetails(d) {
+      document.getElementById("pinHint").classList.add("d-none");
+      document.getElementById("pinDetails").classList.remove("d-none");
+
+      document.getElementById("dPlace").textContent =
+        `${d.place}${d.country ? ", " + d.country : ""}`;
+
+      document.getElementById("dDates").textContent =
+        `${d.start_date} → ${d.end_date}${d.days ? " · " + d.days + " days" : ""}`;
+
+      const badges = document.getElementById("dBadges");
+      badges.innerHTML = "";
+
+      const b1 = document.createElement("span");
+      b1.className = "badge text-bg-light border";
+      b1.textContent = d.type || "visited";
+      badges.appendChild(b1);
+
+      if (d.lat != null && d.lng != null) {
+        const b2 = document.createElement("span");
+        b2.className = "badge text-bg-light border";
+        b2.textContent = `Lat ${d.lat}, Lng ${d.lng}`;
+        badges.appendChild(b2);
+      }
+
+      document.getElementById("dNotes").innerHTML = d.notes_md ? marked.parse(d.notes_md) : "";
+
+    }
+
+    function clearDetails() {
+      document.getElementById("pinDetails").classList.add("d-none");
+      document.getElementById("pinHint").classList.remove("d-none");
+
+      document.getElementById("dPlace").textContent = "";
+      document.getElementById("dDates").textContent = "";
+      document.getElementById("dBadges").innerHTML = "";
+      document.getElementById("dNotes").innerHTML = "";
+
+      // remove active pin highlight
+      document.querySelectorAll(".map-pin.is-active").forEach(p => p.classList.remove("is-active"));
+
+      document.querySelectorAll("#travelAccordion .accordion-collapse.show").forEach(openEl => {
+        bootstrap.Collapse.getOrCreateInstance(openEl, { toggle: false }).hide();
+      });
+
+    }
+
+
+    globe
+      .htmlElementsData(pinStops)
+      .htmlLat(d => d.lat)
+      .htmlLng(d => d.lng)
+      .htmlElement(d => {
+        const el = document.createElement("div");
+        el.className = "map-pin";
+        el.dataset.year = (d.start_date || "").slice(0, 4);
+        el.title = `${d.place}${d.country ? ", " + d.country : ""}`;
+        
+        // Make the element capture pointer events
+        el.style.pointerEvents = "auto";
+        el.style.cursor = "pointer";
+
+        el.innerHTML = `
+          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+            <path fill="#d62828"
+              d="M12 2c-3.31 0-6 2.69-6 6 0 4.5 6 14 6 14s6-9.5 6-14c0-3.31-2.69-6-6-6zm0 8.2a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4z"/>
+          </svg>
+        `;
+
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          markPinClick();
+
+          document.querySelectorAll(".map-pin.is-active").forEach(p => p.classList.remove("is-active"));
+          el.classList.add("is-active");
+
+          showDetails(d);
+
+          const item = document.querySelector(`[data-stop-id="${d.id}"]`);
+          if (item) {
+            const collapseEl = item.querySelector(".accordion-collapse");
+            if (collapseEl) {
+              // (optional) close other open panels so it behaves like a true accordion
+              document.querySelectorAll("#travelAccordion .accordion-collapse.show").forEach(openEl => {
+                if (openEl !== collapseEl) {
+                  bootstrap.Collapse.getOrCreateInstance(openEl, { toggle: false }).hide();
+                }
+              });
+
+              bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).show();
+            }
+          }
+
+
+          globe.pointOfView(
+            { lat: d.lat, lng: d.lng, altitude: 1.2 }, // zoom IN
+            800
+          );
+
+        });
+
+        return el;
+      })
+      .htmlTransitionDuration(0);
+
+  let pinClickInProgress = false;
+
+  // Mark when a pin was clicked
+  function markPinClick() {
+    pinClickInProgress = true;
+    setTimeout(() => {
+      pinClickInProgress = false;
+    }, 0);
+  }
+
+  // Zoom OUT when clicking globe background
+  globe.onGlobeClick(() => {
+    // If this click was actually a pin click, ignore
+    if (pinClickInProgress) return;
+
+    // Zoom back out to default
+    globe.pointOfView(DEFAULT_VIEW, 900);
+    clearDetails();
+  });
+
+  (function setupYearFilter() {
+    const select = document.getElementById("yearFilter");
+    const acc = document.getElementById("travelAccordion");
+    if (!select || !acc) return;
+
+    // Build unique year list from stops
+    const years = Array.from(new Set(
+      stops
+        .map(s => (s.start_date || "").slice(0, 4))
+        .filter(y => /^\d{4}$/.test(y))
+    )).sort((a, b) => b.localeCompare(a)); // newest first
+
+    years.forEach(y => {
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y;
+      select.appendChild(opt);
+    });
+
+    function applyFilter(yearVal) {
+      // Accordion items
+      acc.querySelectorAll(".accordion-item").forEach(item => {
+        const y = item.dataset.year || "";
+        const show = (yearVal === "__all__") || (y === yearVal);
+        item.classList.toggle("d-none", !show);
+
+        // If hidden, close it (keeps accordion state clean)
+        if (!show) {
+          const collapseEl = item.querySelector(".accordion-collapse");
+          if (collapseEl && collapseEl.classList.contains("show")) {
+            bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false }).hide();
+          }
+        }
+      });
+
+      // Pins
+      document.querySelectorAll(".map-pin").forEach(pin => {
+        const y = pin.dataset.year || "";
+        const show = (yearVal === "__all__") || (y === yearVal);
+        pin.classList.toggle("d-none", !show);
+      });
+    }
+
+    select.addEventListener("change", () => applyFilter(select.value));
+    applyFilter(select.value); // initial
+  })();
+
+  document.querySelectorAll("#travelAccordion .accordion-collapse").forEach(collapseEl => {
+    collapseEl.addEventListener("hidden.bs.collapse", () => {
+      clearDetails();
+    });
+  });
+
+  </script>
+
+
+{% endblock %}

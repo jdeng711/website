@@ -1,0 +1,27 @@
+[
+  {
+    "type": "photo",
+    "title": "Street Studies",
+    "slug": "street-studies",
+    "year": 2025,
+    "tags": ["street", "b&w"],
+    "cover_image": "portfolio/street/cover.jpg",
+    "description_md": "A small series exploring quiet moments in the city.",
+    "images": [
+      "portfolio/street/01.jpg",
+      "portfolio/street/02.jpg",
+      "portfolio/street/03.jpg"
+    ]
+  },
+  {
+    "type": "film",
+    "title": "Short Film Demo",
+    "slug": "short-film-demo",
+    "year": 2024,
+    "tags": ["short", "editing"],
+    "cover_image": "portfolio/film-demo/cover.jpg",
+    "description_md": "A short film project. Role: editor.",
+    "video_url": "https://www.youtube.com/embed/s_6ibr5eSTM?si=5rvGnNajF9ZktwVe",
+    "credits": ["Editor — Jason Deng", "Director — Name"]
+  }
+]

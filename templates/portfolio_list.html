@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  {% if not items %}
+    <p class="text-muted">Nothing here yet.</p>
+  {% else %}
+    <div class="row g-3">
+      {% for it in items %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <a class="text-decoration-none" href="{{ url_for('portfolio_detail', slug=it.slug) }}">
+            <article class="border rounded-4 bg-white overflow-hidden h-100 portfolio-card">
+              <div class="portfolio-media">
+                {% if it.cover_image %}
+                  <img
+                    class="w-100 portfolio-cover"
+                    src="{{ url_for('static', filename=it.cover_image) }}"
+                    alt="{{ it.title }} cover"
+                    loading="lazy"
+                    onerror="this.style.display='none'; this.closest('.portfolio-media').classList.add('portfolio-media-fallback');"
+                  />
+                {% endif %}
+
+                <div class="portfolio-fallback">
+                  <div class="portfolio-fallback-inner">
+                    <span class="small text-muted">{{ heading }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3">
+                <div class="d-flex justify-content-between align-items-baseline gap-2">
+                  <h2 class="h6 mb-0 text-dark">{{ it.title }}</h2>
+                  {% if it.year %}
+                    <span class="text-muted small">{{ it.year }}</span>
+                  {% endif %}
+                </div>
+
+                {% if it.excerpt %}
+                  <p class="mt-2 mb-0 text-muted portfolio-excerpt">{{ it.excerpt }}</p>
+                {% endif %}
+
+                {% if it.tags and it.tags|length > 0 %}
+                  <div class="mt-2 d-flex flex-wrap gap-2">
+                    {% for t in it.tags %}
+                      <span class="badge text-bg-light border">{{ t }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </article>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

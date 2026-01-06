@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jason Deng</title>
+
+  <!-- Use your existing main.css so splitflap styles still work -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+</head>
+
+<body class="airport-home">
+  <main class="airport-shell">
+    <header class="airport-header">
+      <div class="airport-kicker">PROFILE</div>
+      <div class="airport-meta">
+        <button class="airport-code" id="themeToggle" aria-label="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+        <div class="airport-clock" id="airportClock">--:--</div>
+      </div>
+    </header>
+
+    <section class="airport-hero">
+      <!-- LEFT: splitflap board -->
+      <div class="split-flap-board airport-board">
+        <div class="board-title">JASON DENG</div>
+
+        <div class="board-row">
+          <div class="row-label">Currently In:</div>
+          <div class="flap-container" id="location"></div>
+        </div>
+
+        <div class="board-row">
+          <div class="row-label">Email:</div>
+          <div class="flap-container" id="email"></div>
+        </div>
+
+        <div class="board-row">
+          <div class="row-label">Status:</div>
+          <div class="flap-container" id="status"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: wayfinding -->
+      <nav class="wayfinding airport-wayfinding" aria-label="Wayfinding">
+        <a class="wayfinding-btn" href="{{ url_for('portfolio_photography') }}">
+          <span class="wf-emoji" aria-hidden="true">📷</span>
+          <span class="wf-arrow" aria-hidden="true">→</span>
+          <span class="wf-text">Photography</span>
+          
+        </a>
+
+        <a class="wayfinding-btn" href="{{ url_for('portfolio_film') }}">
+          <span class="wf-emoji" aria-hidden="true">🎬</span>
+          <span class="wf-arrow" aria-hidden="true">→</span>
+          <span class="wf-text">Filmmaking</span>
+          
+        </a>
+
+        <a class="wayfinding-btn" href="{{ url_for('blog') }}">
+          <span class="wf-emoji" aria-hidden="true">🧑‍💻</span>
+          <span class="wf-arrow" aria-hidden="true">→</span>
+          <span class="wf-text">Projects & Blog</span>
+          
+        </a>
+
+        <a class="wayfinding-btn" href="{{ url_for('travel') }}">
+          <span class="wf-emoji" aria-hidden="true">🌐</span>
+          <span class="wf-arrow" aria-hidden="true">→</span>
+          <span class="wf-text">Travels</span>
+          
+        </a>
+      </nav>
+    </section>
+</section>
+
+    <section class="boarding-area">
+      
+      <div class="boarding-visual">
+        <div class="visual-frame">
+          <img src="{{ url_for('static', filename='images/jason-filming.jpg') }}" alt="CS50 Final Project Presentation, 2025" class="visual-img">
+           <div class="visual-tag">CS50 Final Project Presentation, 2025</div>
+        </div>
+      </div>
+
+      <div class="boarding-info">
+        <div class="gate-screen">
+          <header class="screen-header">
+            <span class="gate-label">ABOUT ME</span>
+            <span class="gate-status">🇨🇦🇨🇳</span>
+          </header>
+          
+          <div class="screen-body">
+            <h3 class="bio-title">Jason Deng 邓佳鑫</h3>
+            <p class="bio-text">
+              Hello! I am a freshman at Harvard College from Vancouver, Canada, aspiring to pursue a concentration in the sciences while exploring topics in urban studies.
+              <br><br>
+               At Harvard, I am involved with:
+              <br>
+                &nbsp&nbsp📰 The Harvard Crimson - Multimedia & Sports Staff Writer
+              <br>
+                &nbsp&nbsp🥌 Harvard Curling Team - College Curling USA Bonspiels
+              <br>
+                &nbsp&nbsp📚 Houghton Library - Special Collections Student Assistant
+
+          </div>
+
+          <footer class="screen-footer">
+            <span>GPA: 3.84</span>
+            <span>YEAR: FRESHMAN SPRING</span>
+          </footer>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+
+    <footer class="metro-footer">
+        <div class="metro-container">
+        
+        <div class="metro-line"></div>
+
+        <a href="{{ url_for('static', filename='resume.pdf') }}" class="metro-stop" target="_blank">
+            <div class="metro-marker"></div>
+            <span class="metro-label">Resume</span>
+        </a>
+
+        <a href="https://linkedin.com/in/jsndeng" class="metro-stop" target="_blank">
+            <div class="metro-marker"></div>
+            <span class="metro-label">LinkedIn</span>
+        </a>
+        <a href="https://www.thecrimson.com/writer/1221107/Jason__Deng/" class="metro-stop" target="_blank">
+            <div class="metro-marker"></div>
+            <span class="metro-label">Writer Page</span>
+        </a>
+
+        <a href="https://instagram.com/jdengphoto" class="metro-stop" target="_blank">
+            <div class="metro-marker"></div>
+            <span class="metro-label">Instagram</span>
+        </a>
+
+        <a href="https://youtube.com/@dengjason" class="metro-stop" target="_blank">
+            <div class="metro-marker"></div>
+            <span class="metro-label">YouTube</span>
+        </a>
+
+        </div>
+    </footer>
+
+  <script src="{{ url_for('static', filename='js/splitflap.js') }}"></script>
+
+  <!-- Theme toggle and clock -->
+  <script>
+    // Clock
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function tick(){
+      const d = new Date();
+      document.getElementById('airportClock').textContent =
+        `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    tick(); setInterval(tick, 1000 * 10);
+
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    // Check for saved theme preference or default to dark
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    html.setAttribute('data-theme', currentTheme);
+    themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      themeIcon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+    });
+  </script>
+</body>
+</html>

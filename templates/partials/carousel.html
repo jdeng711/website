@@ -1,0 +1,36 @@
+{% if images and images|length > 0 %}
+  <div id="{{ cid }}" class="carousel slide mt-3" data-bs-ride="false">
+    <div class="carousel-inner rounded-4 border bg-white overflow-hidden">
+      {% for img in images %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          <img
+            class="d-block w-100 site-carousel-img"
+            src="{{ url_for('static', filename=img) }}"
+            alt="{{ alt_prefix }} {{ loop.index }}"
+            loading="lazy"
+          />
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if images|length > 1 %}
+      <button class="carousel-control-prev" type="button" data-bs-target="#{{ cid }}" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#{{ cid }}" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+
+      <div class="carousel-indicators">
+        {% for _ in images %}
+          <button
+            type="button"
+            data-bs-target="#{{ cid }}"
+            data-bs-slide-to="{{ loop.index0 }}"
+            class="{% if loop.first %}active{% endif %}"
+          ></button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

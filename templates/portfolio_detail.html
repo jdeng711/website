@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="mb-3">
+    <a class="text-decoration-none" href="{% if item.type == 'photo' %}{{ url_for('portfolio_photography') }}{% else %}{{ url_for('portfolio_film') }}{% endif %}">
+      ← Back
+    </a>
+  </div>
+
+  <article class="p-4 p-md-5 border rounded-4 bg-white reading-width mx-auto">
+    <header class="mb-4">
+      <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
+        <h1 class="mb-0">{{ item.title }}</h1>
+        {% if item.year %}
+          <span class="text-muted">{{ item.year }}</span>
+        {% endif %}
+      </div>
+
+      {% if item.tags and item.tags|length > 0 %}
+        <div class="mt-2 d-flex flex-wrap gap-2">
+          {% for t in item.tags %}
+            <span class="badge text-bg-light border">{{ t }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if item.description_md %}
+        <div class="mt-3 post-md">
+          {{ item.description_md | markdown }}
+        </div>
+      {% endif %}
+    </header>
+
+    {% if item.type == "photo" %}
+      {% if item.images and item.images|length > 0 %}
+        {% set cid = "portfolioCarousel-" ~ item.slug %}
+        {% set images = item.images %}
+        {% set alt_prefix = item.title ~ " image" %}
+        {% include "partials/carousel.html" %}
+      {% else %}
+        <p class="text-muted mb-0">No images yet.</p>
+      {% endif %}
+    {% elif item.type == "film" %}
+      {% if item.video_url %}
+        <div class="ratio ratio-16x9 rounded-4 overflow-hidden border">
+          <iframe
+            src="{{ item.video_url }}"
+            title="{{ item.title }}"
+            allowfullscreen
+          ></iframe>
+        </div>
+      {% endif %}
+
+      {% if item.credits and item.credits|length > 0 %}
+        <h2 class="h5 mt-4">Credits</h2>
+        <ul class="mb-0">
+          {% for c in item.credits %}
+            <li class="text-muted">{{ c }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endif %}
+  </article>
+{% endblock %}

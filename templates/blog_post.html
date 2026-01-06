@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="mb-3">
+    <a class="text-decoration-none" href="{{ url_for('blog') }}">← Back to blog</a>
+  </div>
+
+  <article class="p-4 p-md-5 border rounded-4 bg-white">
+    <header class="mb-4">
+      <h1 class="mb-2">{{ post.title }}</h1>
+      {% if post.date %}
+        <div class="text-muted small">{{ post.date }}</div>
+      {% endif %}
+      {% if post.tags and post.tags|length > 0 %}
+        <div class="mt-2 d-flex flex-wrap gap-2">
+          {% for t in post.tags %}
+            <span class="badge text-bg-light border">{{ t }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </header>
+
+    <div class="post-md">
+      {{ post.content_md | markdown }}
+    </div>
+  </article>
+{% endblock %}

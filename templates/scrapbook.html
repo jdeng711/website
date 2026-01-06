@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2 mb-3">
+    <h1 class="mb-0">Scrapbook</h1>
+    <a class="text-decoration-none" href="{{ url_for('logout') }}">Logout</a>
+  </div>
+
+  <p class="text-muted">
+    Private space for photos, notes, and little moments.
+  </p>
+
+  {% if not entries %}
+    <div class="p-4 border rounded-4 bg-white">
+      <p class="mb-0">No entries yet.</p>
+    </div>
+  {% else %}
+    <div class="vstack gap-4">
+      {% for e in entries %}
+        <article class="p-4 border rounded-4 bg-white">
+          <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
+            <h2 class="h5 mb-0">{{ e.title }}</h2>
+            <span class="text-muted small">{{ e.date }}</span>
+          </div>
+
+          {% if e.text_md %}
+            <div class="mt-3 scrapbook-md">{{ e.text_md | markdown }}</div>
+          {% endif %}
+
+          {% if e.images and e.images|length > 0 %}
+            {% set cid = "scrapbookCarousel-" ~ loop.index %}
+            <div id="{{ cid }}" class="carousel slide mt-3" data-bs-ride="false">
+              <div class="carousel-inner rounded-4 border bg-white overflow-hidden">
+                {% for img in e.images %}
+                  <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <img
+                      class="d-block w-100 scrapbook-carousel-img"
+                      src="{{ url_for('static', filename=img) }}"
+                      alt="{{ e.title }} image {{ loop.index }}"
+                      loading="lazy"
+                    />
+                  </div>
+                {% endfor %}
+              </div>
+
+              {% if e.images|length > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#{{ cid }}" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#{{ cid }}" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+                </button>
+
+                <div class="carousel-indicators">
+                  {% for img in e.images %}
+                    <button
+                      type="button"
+                      data-bs-target="#{{ cid }}"
+                      data-bs-slide-to="{{ loop.index0 }}"
+                      class="{% if loop.first %}active{% endif %}"
+                      aria-current="{% if loop.first %}true{% endif %}"
+                      aria-label="Slide {{ loop.index }}"
+                    ></button>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+          
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
